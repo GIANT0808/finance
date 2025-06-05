@@ -11,6 +11,7 @@ from kivymd.uix.label import MDLabel
 from datetime import datetime
 from kivy.properties import StringProperty, NumericProperty
 from kivy.core.window import Window
+from kivy.utils import get_color_from_hex
 
 KV = '''
 ScreenManager:
@@ -18,17 +19,18 @@ ScreenManager:
         name: "main"
 
 <Sidebar@MDBoxLayout>:
-    orientation: 'vertical'
     size_hint: None, 1
     width: dp(220)
-    md_bg_color: 0.08, 0.08, 0.08, 1
-    padding: dp(16)
-    spacing: dp(20)
-    pos_hint: {"top": 1}
+    md_bg_color: get_color_from_hex("#1c1c1c")
 
     MDBoxLayout:
-        size_hint_y: None
-        height: dp(40)
+        orientation: 'vertical'
+        spacing: dp(16)
+        
+        size_hint: 1, None
+        height: self.minimum_height
+        pos_hint: {"top": 1}
+
         MDLabel:
             text: "FINANCE TRACKER"
             font_size: dp(20)
@@ -36,12 +38,10 @@ ScreenManager:
             theme_text_color: "Custom"
             text_color: 1, 1, 1, 1
             halign: 'left'
-            valign: 'top'
-
-    MDBoxLayout:
-        orientation: 'vertical'
-        spacing: dp(10)
-        padding: 0
+            valign: 'middle'
+            size_hint_y: None
+            height: dp(40)
+            padding_x: dp(16) 
 
         MDLabel:
             text: "Dashboard"
@@ -50,6 +50,7 @@ ScreenManager:
             halign: 'left'
             size_hint_y: None
             height: dp(36)
+            padding_x: dp(16) 
 
         MDLabel:
             text: "Analytics"
@@ -58,13 +59,13 @@ ScreenManager:
             halign: 'left'
             size_hint_y: None
             height: dp(36)
+            padding_x: dp(16)  
 
         MDBoxLayout:
-            md_bg_color: 1, 1, 1, 1
-            radius: [10]
             size_hint_y: None
             height: dp(36)
-            padding: dp(10), 0
+            md_bg_color: 1, 1, 1, 1
+            padding: 0
 
             MDLabel:
                 text: "Savings"
@@ -72,6 +73,8 @@ ScreenManager:
                 text_color: 0, 0, 0, 1
                 halign: 'left'
                 valign: 'middle'
+                size_hint_x: 1  
+                padding_x: dp(16)  
 
         MDLabel:
             text: "Transaction"
@@ -80,6 +83,7 @@ ScreenManager:
             halign: 'left'
             size_hint_y: None
             height: dp(36)
+            padding_x: dp(16)  
 
         MDLabel:
             text: "Settings"
@@ -88,13 +92,14 @@ ScreenManager:
             halign: 'left'
             size_hint_y: None
             height: dp(36)
+            padding_x: dp(16)  
 
 <ChartCard@MDCard>:
     size_hint: None, None
     size: dp(130), dp(150)
     padding: dp(12)
     orientation: 'vertical'
-    md_bg_color: 1,1,1,0.05
+    md_bg_color: 1, 1, 1, 1
     radius: [dp(12),]
     elevation: 2
 
@@ -105,6 +110,7 @@ ScreenManager:
         halign: "center"
         size_hint_y: None
         height: self.texture_size[1]
+        theme_text_color: "Primary"
 
     MDLabel:
         id: label
@@ -115,6 +121,7 @@ ScreenManager:
         shorten_from: "right"
         size_hint_y: None
         height: self.texture_size[1]
+        theme_text_color: "Primary"
 
     MDLabel:
         id: figures
@@ -163,30 +170,46 @@ ScreenManager:
             spacing: dp(16)
             canvas.before:
                 Color:
-                    rgba: 0.07, 0.07, 0.07, 1
+                    rgba: 1, 1, 1, 1
                 Rectangle:
                     pos: self.pos
                     size: self.size
 
             MDBoxLayout:
+                orientation: "vertical"
                 size_hint_y: None
-                height: dp(48)
-                padding: 0, 0, dp(16), 0
+                height: dp(100)
+                padding: [0, dp(16), 0, 0]
+                spacing: dp(0)
+                
+                
+
                 MDLabel:
                     text: "SAVINGS"
                     font_style: "H4"
                     bold: True
-                    size_hint_x: 0.9
-                    valign: 'middle'
+                    theme_text_color: "Primary"
+                    size_hint_y: None
+                    height: self.texture_size[1]
 
+                MDBoxLayout:
+                    size_hint_y: None
+                    height: dp(36)
+                    padding: 0, 0, dp(16), 0
+                    spacing: dp(8)
+
+                 
+
+                    
                 MDRaisedButton:
                     id: add_savings_btn
                     text: "Add Savings"
-                    md_bg_color: 1, 0.6, 0, 1
-                    text_color: 1,1,1,1
+                    md_bg_color: get_color_from_hex("#F89411")
+                    text_color: 1, 1, 1, 1
                     size_hint: None, None
                     size: dp(120), dp(36)
-                    pos_hint: {"center_y": 0.5}
+                    pos_hint: {"right": 1}
+                    padding: dp(8), 0
                     on_release: app.show_popup()
 
             ScrollView:
@@ -207,21 +230,34 @@ ScreenManager:
                     size_hint_y: None
                     height: self.minimum_height
 
-            MDLabel:
-                text: "History"
-                font_style: "H6"
+            MDCard:
                 size_hint_y: None
-                height: self.texture_size[1]
+                height: dp(280)
+                padding: dp(16)
+                radius: [dp(12),]
+                elevation: 4
+                orientation: "vertical"
 
-            MDScrollView:
-                MDBoxLayout:
-                    id: history_container
-                    orientation: 'vertical'
+                MDLabel:
+                    text: "History"
+                    font_style: "H6"
                     size_hint_y: None
-                    height: self.minimum_height
+                    height: self.texture_size[1]
 
-                    HistoryTable:
+                MDScrollView:
+                    do_scroll_x: False
+                    bar_width: dp(5)
+
+                    MDBoxLayout:
+                        id: history_container
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        height: self.minimum_height
+
+                        HistoryTable:
 '''
+
+
 
 class ChartCard(MDCard):
     label_text = StringProperty("")
@@ -240,8 +276,10 @@ class ChartCard(MDCard):
         self.ids.label.text = self.label_text
         self.ids.figures.text = f"{int(self.current_value)}/{int(self.target_value)}"
 
+
 class MainScreen(Screen):
     pass
+
 
 class AddSavingsContent(MDBoxLayout):
     def __init__(self, **kwargs):
@@ -254,6 +292,7 @@ class AddSavingsContent(MDBoxLayout):
             self.add_widget(MDLabel(text=label, font_style="Caption", theme_text_color="Secondary", size_hint_y=None, height=dp(16)))
             self.add_widget(field)
 
+
 class EditCardContent(MDBoxLayout):
     def __init__(self, card, **kwargs):
         super().__init__(orientation='vertical', spacing=dp(12), padding=dp(16), size_hint=(1, None), height=dp(220), **kwargs)
@@ -262,18 +301,19 @@ class EditCardContent(MDBoxLayout):
         self.add_widget(self.name_input)
         self.add_widget(self.value_input)
 
+
 class FinanceTrackerApp(MDApp):
     dialog = None
 
     def build(self):
-        self.theme_cls.theme_style = "Dark"
+        self.theme_cls.theme_style = "Light"
         self.theme_cls.primary_palette = "DeepPurple"
         root = Builder.load_string(KV)
 
-        # Update columns on window resize
+        
         Window.bind(on_resize=self.update_chart_cols)
 
-        # Schedule initial columns update after build
+        
         from kivy.clock import Clock
         Clock.schedule_once(self.update_chart_cols, 0)
 
@@ -294,7 +334,7 @@ class FinanceTrackerApp(MDApp):
             size_hint=(0.9, None),
             height=dp(500),
             buttons=[
-                MDRaisedButton(text="SAVE", on_release=lambda x: self.save_savings(content)),
+                MDRaisedButton(text="SAVE", on_release=lambda x: self.save_savings(content), md_bg_color=get_color_from_hex("#F89411"), text_color=(1,1,1,1)),
                 MDFlatButton(text="CANCEL", on_release=lambda x: self.safe_dismiss())
             ],
             auto_dismiss=False
@@ -351,7 +391,7 @@ class FinanceTrackerApp(MDApp):
             size_hint=(0.9, None),
             height=dp(280),
             buttons=[
-                MDRaisedButton(text="UPDATE", on_release=lambda x: self.update_card(card, content)),
+                MDRaisedButton(text="UPDATE", on_release=lambda x: self.update_card(card, content), md_bg_color=get_color_from_hex("#F89411"), text_color=(1,1,1,1)),
                 MDFlatButton(text="CANCEL", on_release=lambda x: self.safe_dismiss())
             ],
             auto_dismiss=False
@@ -369,14 +409,16 @@ class FinanceTrackerApp(MDApp):
 
     def update_chart_cols(self, *args):
         chart_area = self.root.get_screen("main").ids.chart_area
-        card_width = dp(130) + dp(16)  # card width + spacing
-        available_width = Window.width - dp(220) - dp(48)  # sidebar + padding
+        card_width = dp(130) + dp(16)  
+        available_width = Window.width - dp(220) - dp(48) 
         cols = max(int(available_width // card_width), 1)
         chart_area.cols = cols
 
         # Calculate rows needed and adjust height accordingly
         rows = (len(chart_area.children) + cols - 1) // cols
-        chart_area.height = rows * (dp(160) + dp(16))  # card height + spacing
+        chart_area.height = rows * (dp(160) + dp(16)) 
+
 
 if __name__ == '__main__':
     FinanceTrackerApp().run()
+
