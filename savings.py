@@ -1,6 +1,5 @@
 from kivy.metrics import dp
 from kivy.uix.screenmanager import ScreenManager, Screen
-from kivy.properties import StringProperty, NumericProperty
 from kivymd.app import MDApp
 from kivymd.uix.card import MDCard
 from kivy.lang import Builder
@@ -10,6 +9,8 @@ from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.label import MDLabel
 from datetime import datetime
+from kivy.properties import StringProperty, NumericProperty
+from kivy.core.window import Window
 
 KV = '''
 ScreenManager:
@@ -23,59 +24,72 @@ ScreenManager:
     md_bg_color: 0.08, 0.08, 0.08, 1
     padding: dp(16)
     spacing: dp(20)
-
-    MDLabel:
-        text: "FINANCE TRACKER"
-        font_size: dp(20)
-        bold: True
-        theme_text_color: "Custom"
-        text_color: 1, 1, 1, 1
-        size_hint_y: None
-        height: dp(40)
-        halign: 'left'
-
-    MDSeparator:
-        height: dp(1)
-
-    MDLabel:
-        text: "Dashboard"
-        theme_text_color: "Custom"
-        text_color: 1, 1, 1, 0.7
-        halign: 'left'
-        size_hint_y: None
-        height: dp(36)
-
-    MDLabel:
-        text: "Analytics"
-        theme_text_color: "Custom"
-        text_color: 1, 1, 1, 0.7
-        halign: 'left'
-        size_hint_y: None
-        height: dp(36)
+    pos_hint: {"top": 1}
 
     MDBoxLayout:
-        md_bg_color: 1, 1, 1, 1
-        radius: [10]
         size_hint_y: None
-        height: dp(36)
-        padding: dp(10), 0
+        height: dp(40)
+        MDLabel:
+            text: "FINANCE TRACKER"
+            font_size: dp(20)
+            bold: True
+            theme_text_color: "Custom"
+            text_color: 1, 1, 1, 1
+            halign: 'left'
+            valign: 'top'
+
+    MDBoxLayout:
+        orientation: 'vertical'
+        spacing: dp(10)
+        padding: 0
 
         MDLabel:
-            text: "Savings"
+            text: "Dashboard"
             theme_text_color: "Custom"
-            text_color: 0, 0, 0, 1
+            text_color: 1, 1, 1, 0.7
             halign: 'left'
-            valign: 'middle'
+            size_hint_y: None
+            height: dp(36)
 
-    MDLabel:
-        text: "Transaction"
-        theme_text_color: "Custom"
-        text_color: 1, 1, 1, 0.7
-        halign: 'left'
-        size_hint_y: None
-        height: dp(36)
+        MDLabel:
+            text: "Analytics"
+            theme_text_color: "Custom"
+            text_color: 1, 1, 1, 0.7
+            halign: 'left'
+            size_hint_y: None
+            height: dp(36)
 
-<ChartCard>:
+        MDBoxLayout:
+            md_bg_color: 1, 1, 1, 1
+            radius: [10]
+            size_hint_y: None
+            height: dp(36)
+            padding: dp(10), 0
+
+            MDLabel:
+                text: "Savings"
+                theme_text_color: "Custom"
+                text_color: 0, 0, 0, 1
+                halign: 'left'
+                valign: 'middle'
+
+        MDLabel:
+            text: "Transaction"
+            theme_text_color: "Custom"
+            text_color: 1, 1, 1, 0.7
+            halign: 'left'
+            size_hint_y: None
+            height: dp(36)
+
+        MDLabel:
+            text: "Settings"
+            theme_text_color: "Custom"
+            text_color: 1, 1, 1, 0.7
+            halign: 'left'
+            size_hint_y: None
+            height: dp(36)
+
+<ChartCard@MDCard>:
     size_hint: None, None
     size: dp(130), dp(150)
     padding: dp(12)
@@ -134,9 +148,8 @@ ScreenManager:
             font_style: "Subtitle2"
             bold: True
             halign: 'right'
-
-    MDSeparator:
-        height: dp(1)
+            theme_text_color: "Custom"
+            text_color: 0, 1, 0, 1
 
 <MainScreen>:
     MDBoxLayout:
@@ -158,25 +171,41 @@ ScreenManager:
             MDBoxLayout:
                 size_hint_y: None
                 height: dp(48)
-
+                padding: 0, 0, dp(16), 0
                 MDLabel:
                     text: "SAVINGS"
                     font_style: "H4"
                     bold: True
+                    size_hint_x: 0.9
+                    valign: 'middle'
 
-                MDFillRoundFlatButton:
-                    text: "Add new savings ▼"
+                MDRaisedButton:
+                    id: add_savings_btn
+                    text: "Add Savings"
                     md_bg_color: 1, 0.6, 0, 1
-                    text_color: 1, 1, 1, 1
+                    text_color: 1,1,1,1
                     size_hint: None, None
-                    size: dp(160), dp(36)
+                    size: dp(120), dp(36)
+                    pos_hint: {"center_y": 0.5}
                     on_release: app.show_popup()
 
-            MDBoxLayout:
-                id: chart_area
+            ScrollView:
                 size_hint_y: None
                 height: dp(160)
-                spacing: dp(16)
+                bar_width: 5
+                scroll_type: ['bars', 'content']
+                do_scroll_y: True
+                do_scroll_x: False
+
+                GridLayout:
+                    id: chart_area
+                    cols: 1
+                    row_default_height: dp(160)
+                    row_force_default: True
+                    spacing: dp(16)
+                    padding: dp(8)
+                    size_hint_y: None
+                    height: self.minimum_height
 
             MDLabel:
                 text: "History"
@@ -195,41 +224,43 @@ ScreenManager:
 '''
 
 class ChartCard(MDCard):
-    label_text = StringProperty()
+    label_text = StringProperty("")
     current_value = NumericProperty(0)
     target_value = NumericProperty(1)
 
-    def on_touch_down(self, touch):
-        if self.collide_point(*touch.pos) and touch.is_double_tap:
-            app = MDApp.get_running_app()
-            app.show_edit_delete_menu(self)
+    def on_touch_up(self, touch):
+        if self.collide_point(*touch.pos):
+            MDApp.get_running_app().show_update_dialog(self)
             return True
-        return super().on_touch_down(touch)
+        return super().on_touch_up(touch)
+
+    def update_display(self):
+        percent = int((self.current_value / self.target_value) * 100) if self.target_value else 0
+        self.ids.percent.text = f"{percent}%"
+        self.ids.label.text = self.label_text
+        self.ids.figures.text = f"{int(self.current_value)}/{int(self.target_value)}"
 
 class MainScreen(Screen):
     pass
 
 class AddSavingsContent(MDBoxLayout):
     def __init__(self, **kwargs):
-        super().__init__(orientation='vertical', spacing=dp(12), padding=dp(16), size_hint=(1, None), height=dp(300), **kwargs)
+        super().__init__(orientation='vertical', spacing=dp(12), padding=dp(16), size_hint=(1, None), height=dp(400), **kwargs)
         self.name_input = MDTextField(hint_text="Enter name", mode="rectangle", size_hint_y=None, height=dp(48))
         self.date_input = MDTextField(hint_text="Enter date (YYYY-MM-DD)", mode="rectangle", size_hint_y=None, height=dp(48))
-        self.value_input = MDTextField(hint_text="Enter value", mode="rectangle", size_hint_y=None, height=dp(48))
-        self.target_input = MDTextField(hint_text="Enter target amount", mode="rectangle", size_hint_y=None, height=dp(48))
+        self.value_input = MDTextField(hint_text="Enter value", mode="rectangle", size_hint_y=None, height=dp(48), input_filter='float')
+        self.target_input = MDTextField(hint_text="Enter target amount", mode="rectangle", size_hint_y=None, height=dp(48), input_filter='float')
         for label, field in [("Name", self.name_input), ("Date", self.date_input), ("Value", self.value_input), ("Target", self.target_input)]:
             self.add_widget(MDLabel(text=label, font_style="Caption", theme_text_color="Secondary", size_hint_y=None, height=dp(16)))
             self.add_widget(field)
 
 class EditCardContent(MDBoxLayout):
     def __init__(self, card, **kwargs):
-        super().__init__(orientation='vertical', spacing=dp(12), padding=dp(16), **kwargs)
-        self.card = card
-        self.name_input = MDTextField(text=card.label_text, hint_text="Edit name", mode="rectangle", size_hint_y=None, height=dp(48))
-        self.value_input = MDTextField(text=str(card.current_value), hint_text="Edit value", mode="rectangle", size_hint_y=None, height=dp(48))
-        self.target_input = MDTextField(text=str(card.target_value), hint_text="Edit target", mode="rectangle", size_hint_y=None, height=dp(48))
-        for label, field in [("Name", self.name_input), ("Value", self.value_input), ("Target", self.target_input)]:
-            self.add_widget(MDLabel(text=label, font_style="Caption", theme_text_color="Secondary", size_hint_y=None, height=dp(16)))
-            self.add_widget(field)
+        super().__init__(orientation='vertical', spacing=dp(12), padding=dp(16), size_hint=(1, None), height=dp(220), **kwargs)
+        self.name_input = MDTextField(text=card.label_text, hint_text="Name", mode="rectangle", size_hint_y=None, height=dp(48))
+        self.value_input = MDTextField(text=str(card.current_value), hint_text="Current Value", mode="rectangle", size_hint_y=None, height=dp(48), input_filter='float')
+        self.add_widget(self.name_input)
+        self.add_widget(self.value_input)
 
 class FinanceTrackerApp(MDApp):
     dialog = None
@@ -237,7 +268,16 @@ class FinanceTrackerApp(MDApp):
     def build(self):
         self.theme_cls.theme_style = "Dark"
         self.theme_cls.primary_palette = "DeepPurple"
-        return Builder.load_string(KV)
+        root = Builder.load_string(KV)
+
+        # Update columns on window resize
+        Window.bind(on_resize=self.update_chart_cols)
+
+        # Schedule initial columns update after build
+        from kivy.clock import Clock
+        Clock.schedule_once(self.update_chart_cols, 0)
+
+        return root
 
     def safe_dismiss(self):
         if self.dialog:
@@ -245,16 +285,17 @@ class FinanceTrackerApp(MDApp):
             self.dialog = None
 
     def show_popup(self):
+        self.safe_dismiss()
         content = AddSavingsContent()
         self.dialog = MDDialog(
-            title="Add New Savings",
+            title="Add New Saving",
             type="custom",
             content_cls=content,
             size_hint=(0.9, None),
-            height=dp(400),
+            height=dp(500),
             buttons=[
-                MDFlatButton(text="CANCEL", on_release=lambda x: self.safe_dismiss()),
                 MDRaisedButton(text="SAVE", on_release=lambda x: self.save_savings(content)),
+                MDFlatButton(text="CANCEL", on_release=lambda x: self.safe_dismiss())
             ],
             auto_dismiss=False
         )
@@ -271,71 +312,71 @@ class FinanceTrackerApp(MDApp):
             return
 
         try:
-            value_num = float(value)
-            target_num = float(target)
+            datetime.strptime(date, "%Y-%m-%d")
+            value = float(value)
+            target = float(target)
         except ValueError:
-            print("Value and Target must be numbers")
+            print("Invalid date or number")
             return
 
-        card = ChartCard(label_text=name, current_value=value_num, target_value=target_num)
-        percent = int((value_num / target_num) * 100)
-        card.ids.percent.text = f"{percent}%"
-        card.ids.figures.text = f"{int(value_num)}/{int(target_num)}"
+        chart_card = ChartCard()
+        chart_card.label_text = name
+        chart_card.current_value = value
+        chart_card.target_value = target
+        chart_card.update_display()
 
         chart_area = self.root.get_screen("main").ids.chart_area
-        chart_area.add_widget(card)
+        chart_area.add_widget(chart_card)
 
-        self.add_history(name, date, value_num)
+        # Update cols and height dynamically
+        self.update_chart_cols()
+
+        # Add to history
+        history_container = self.root.get_screen("main").ids.history_container
+        row = MDBoxLayout(size_hint_y=None, height=dp(32))
+        row.add_widget(MDLabel(text=name))
+        row.add_widget(MDLabel(text=date))
+        row.add_widget(MDLabel(text=str(value), halign="right", theme_text_color="Custom", text_color=(0, 1, 0, 1)))
+        history_container.add_widget(row)
+
         self.safe_dismiss()
 
-    def show_edit_delete_menu(self, card):
+    def show_update_dialog(self, card):
+        self.safe_dismiss()
         content = EditCardContent(card)
         self.dialog = MDDialog(
-            title=f"Edit {card.label_text}",
+            title=f"Update {card.label_text}",
             type="custom",
             content_cls=content,
             size_hint=(0.9, None),
-            height=dp(320),
+            height=dp(280),
             buttons=[
-                MDFlatButton(text="DELETE", text_color=(1, 0, 0, 1), on_release=lambda x: self.delete_card(card)),
-                MDFlatButton(text="CANCEL", on_release=lambda x: self.safe_dismiss()),
-                MDRaisedButton(text="SAVE", on_release=lambda x: self.save_card_edit(content)),
+                MDRaisedButton(text="UPDATE", on_release=lambda x: self.update_card(card, content)),
+                MDFlatButton(text="CANCEL", on_release=lambda x: self.safe_dismiss())
             ],
             auto_dismiss=False
         )
         self.dialog.open()
 
-    def save_card_edit(self, content):
+    def update_card(self, card, content):
         try:
-            name = content.name_input.text.strip()
-            value = float(content.value_input.text.strip())
-            target = float(content.target_input.text.strip())
-        except ValueError:
-            print("Invalid input")
-            return
-
-        card = content.card
-        card.label_text = name
-        card.current_value = value
-        card.target_value = target
-        card.ids.label.text = name
-        card.ids.percent.text = f"{int((value / target) * 100)}%"
-        card.ids.figures.text = f"{int(value)}/{int(target)}"
-
+            card.label_text = content.name_input.text.strip()
+            card.current_value = float(content.value_input.text.strip())
+            card.update_display()
+        except Exception as e:
+            print("Error updating card:", e)
         self.safe_dismiss()
 
-    def delete_card(self, card):
-        self.root.get_screen("main").ids.chart_area.remove_widget(card)
-        self.safe_dismiss()
+    def update_chart_cols(self, *args):
+        chart_area = self.root.get_screen("main").ids.chart_area
+        card_width = dp(130) + dp(16)  # card width + spacing
+        available_width = Window.width - dp(220) - dp(48)  # sidebar + padding
+        cols = max(int(available_width // card_width), 1)
+        chart_area.cols = cols
 
-    def add_history(self, name, date, amount):
-        container = self.root.get_screen("main").ids.history_container
-        row = MDBoxLayout(size_hint_y=None, height=dp(28))
-        row.add_widget(MDLabel(text=name, font_style="Body2", shorten=True))
-        row.add_widget(MDLabel(text=date, font_style="Body2"))
-        row.add_widget(MDLabel(text=f"[color=00FF00]{amount}[/color]", markup=True, font_style="Body2", halign="right"))
-        container.add_widget(row)
-        container.height = container.minimum_height
+        # Calculate rows needed and adjust height accordingly
+        rows = (len(chart_area.children) + cols - 1) // cols
+        chart_area.height = rows * (dp(160) + dp(16))  # card height + spacing
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     FinanceTrackerApp().run()
